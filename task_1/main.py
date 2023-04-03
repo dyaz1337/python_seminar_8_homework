@@ -37,6 +37,58 @@ os_code_list, os_type_list. В этой же функции создать гл�
 ПРОШУ ВАС НЕ УДАЛЯТЬ СЛУЖЕБНЫЕ ФАЙЛЫ TXT И ИТОГОВЫЙ ФАЙЛ CSV!!!
 """
 
+import csv
+import os
+import re
 
-os_prod_reg = re.compile(r'Изготовитель системы:\s*\S*')
-os_prod_list.append(os_prod_reg.findall(data)[0].split()[2])
+
+def get_data():
+    os_prod_list = []
+    os_name_list = []
+    os_code_list = []
+    os_type_list = []
+    main_data = []
+
+    columns = ['Изготовитель системы', 'Название ОС', 'Код продукта',
+               'Тип системы']
+    main_data.append(columns)
+
+    for file_num in range(1, 4):
+        filename = f'info_{file_num}.txt'
+        if not os.path.exists(filename):
+            print(f'Файл {filename} не найден')
+            continue
+
+        with open(filename) as file:
+            data = file.read()
+
+            os_prod_match = re.search(r'Изготовитель системы:\s*([^\n]*)',
+                                      data)
+            os_name_match = re.search(r'Название ОС:\s*([^\n]*)', data)
+            os_code_match = re.search(r'Код продукта:\s*([^\n]*)', data)
+            os_type_match = re.search(r'Тип системы:\s*([^\n]*)', data)
+
+            os_prod_list.append(os_prod_match.group(1).strip())
+            os_name_list.append(os_name_match.group(1).strip())
+            os_code_list.append(os_code_match.group(1).strip())
+            os_type_list.append(os_type_match.group(1).strip())
+
+        for i in range(len(os_prod_list)):
+            row = [os_prod_list[i], os_name_list[i], os_code_list[i],
+                   os_type_list[i]]
+            main_data.append(row)
+
+    return main_data
+
+
+def write_to_csv(filename):
+    data = get_data()
+
+    with open(filename, 'w', newline='') as file:
+        writer = csv.writer(file)
+        writer.writerows(data)
+
+    print(f'Данные записаны в файл {filename}')
+
+
+write_to_csv('report.csv')
